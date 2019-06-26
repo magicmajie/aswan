@@ -1,62 +1,62 @@
-# 陌陌风控系统静态规则引擎
+# Static Rule Engine of Momo's Risk Control System
 
-### 关于我们
+### About Us
 Website：https://security.immomo.com 
 
 WeChat:<br> 
 <img src="https://momo-mmsrc.oss-cn-hangzhou.aliyuncs.com/img-1c96a083-7392-3b72-8aec-bad201a6abab.jpeg" width="200" hegiht="200" align=center /><br>
 
-[项目介绍](https://mp.weixin.qq.com/s/quk43WU3Vg9cQmub06Azqg)
+[Project Introduction](https://mp.weixin.qq.com/s/quk43WU3Vg9cQmub06Azqg)
 
-### 架构介绍
+### Architecture Introduction
 
-   ![风控系统架构图](./www/static/img/wiki/architecture.jpg)
+   ![Risk Control System Architecture](./www/static/img/wiki/architecture.jpg)
 
-### 快速启动
-1. 本项目依赖redis, mysql, mongodb，因此需准备环境并更改配置项
+### Quick Start 
+1. The project relies on redis, mysql, mongodb, so environments need to be prepared and configuration items need to modified. 
 ```bash
-    # 为了简单可以使用docker安装
-    # docker安装文档地址(以ubuntu为例): https://docs.docker.com/install/linux/docker-ce/ubuntu/
+    # Can use docker to install for simplicity
+    # docker install documentation address(Use ubuntu as example): https://docs.docker.com/install/linux/docker-ce/ubuntu/
     mongo: docker run -d --name mongo -v $HOME/docker_volumes/mongodb:/data/db  -p 27017:27017 mongo:latest
     mysql: docker run -d --name mysql -e MYSQL_ROOT_PASSWORD=root -v $HOME/docker_volumes/mysql:/var/lib/mysql -v $HOME/docker_volumes/conf/mysql:/etc/mysql/conf.d -p 3306:3306 mysql:5.6
     redis: docker run -d --name redis -p 6379:6379  -v $HOME/docker_volumes/redis:/var/lib/redis redis:latest
 ```
 
-2. 在mysql中创建risk_control库
+2. Create risk-control database in mysql. 
 ```bash
-    docker exec -it mysql mysql -h 127.0.0.1 -u root -p # 后续需输入密码 若以上述方式安装mysql，密码为root.
-    CREATE DATABASE risk_control CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; # 创建数据库时指定编码格式，规避乱码问题(注意: 此编码格式在mysql低版本上可能有兼容性问题)
+    docker exec -it mysql mysql -h 127.0.0.1 -u root -p # Will need to input password afterwards. If mysql is installed according to ways above, the password is root. 
+    CREATE DATABASE risk_control CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci; # Specify the encoding type when creating database, to avoid encoding errors. (Caution: This encoding format may have compatibility problems with lower versions of mysql.)
 ```
-3. 安装所需依赖，本项目基于python2.7进行开发，可运行pip install -r requirements.txt安装依赖包
-4. 初始化django运行所需的表并创建账户，并可以预生成一些数据(可选)
+3. Install the dependencies. This project is developed based on python 2.7. Can install the dependency packages by running: pip install -r requirements.txt 
+4. Intialise the tables that are needed for running django, and pre-generate some data (optional) 
 ```bash
-    # 在www目录下
+    # Under www directory
     python manage.py makemigrations && python manage.py migrate
-    # 创建管理员账户  此处详见  其它操作--增加用户
-    python manage.py createsuperuser # 后续 依次输入用户名、密码、邮箱 即可创建一个管理员账号
-    # 如果希望对系统有一个直观的感受，可以使用如下指令来预注入一些数据
+    # Create admin account. Look for details in "Other operations -- Create account"
+    python manage.py createsuperuser # After this, sequentially input username, password, email, can create a admin account. 
+    # If you would like to have a direct impression, can use following commands to pre-generate some data. 
     python manage.py init_risk_data
 ```
-5. 启动服务
+5. Start the Service 
 ```bash
-    # 在aswan下以nohup的方式启动服务进程、管理后台、拦截日志消费进程
+    # Under the aswan directory, in nohup way start the service processes, manage the backstage, block logs, and the consumption processes. 
     bash start.sh
 ```
 
-### 后台介绍
-1. 名单管理
+### Introduction to backstage
+1. Name List management. 
 
-    为名单型策略提供基础的数据管理功能。
+    Provides basic data management functions for Name-List type of rules. 
     
-    名单数据的维度包括：用户ID、IP、设备号、支付账号、手机号。后续也可以根据自己的需求扩充其他的维度。
+    The dimensions of name list data includes: user ID, IP, device ID, payment account, phone number. Can extend to other dimensions according to practical needs. 
     
-    名单包含三个类型：黑、白、灰名单
+    Three types of name lists: Black list, White list, Grey list. 
     
-    名单必须属于某个项目(用于确定名单的范围)，可以在名单管理-名单项目管理中添加项目。
+    A name list must belong to a certain project, in order to determine the scope of the name list. Projects can be added in menu: "Name list management - Name list project management"
         
-    ![名单管理](./www/static/img/wiki/menu.png)
+    ![Name List Management](./www/static/img/wiki/menu.png)
     
-2. 名单型策略
+2. Name-list type rules
 
     描述符为**{参数名:单选,假设是“用户ID”} {操作码：在/不在} {XX项目:单选，可选全局} 的 {维度：单选}{方向：黑/白/灰名单}**
 
